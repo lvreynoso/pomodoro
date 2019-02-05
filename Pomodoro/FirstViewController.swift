@@ -22,14 +22,16 @@ class FirstViewController: UIViewController {
         super.viewDidLoad()
 
         //ACTION: Add observers
-       
+        print("added observer")
+        NotificationCenter.default.addObserver(self, selector: #selector(receivedNotification(_:)), name: NSNotification.Name(rawValue: "pomodoroCompleted"), object: nil)
         
     }
     
     @objc func receivedNotification(_ notification:Notification) {
         // ACTION: Update value of completed cycles
         // ACTION: Update message label
-        
+        self.completedCycles += 1
+        self.messageLabel.text = "\(completedCycles) cycles completed."
     }
 }
 

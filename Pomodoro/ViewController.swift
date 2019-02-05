@@ -41,13 +41,18 @@ class ViewController: UIViewController {
     @IBOutlet weak var startPauseButton: UIButton!
     @IBOutlet weak var resetButton: UIButton!
     @IBOutlet weak var closeButton: UIButton!
+    
+    // keep track of the message label when we are paused
+    var currentMessage: String = "Ready to work"
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         //ACTION: Set button actions for startPauseButton, resetButton and closeButton
-       
-
+        startPauseButton.addTarget(self, action: #selector(startPauseButtonPressed(_:)), for: .touchUpInside)
+        resetButton.addTarget(self, action: #selector(resetButtonPressed(_:)), for: .touchUpInside)
+        closeButton.addTarget(self, action: #selector(closeButtonPressed(_:)), for: .touchUpInside)
+        
         resetAll()
         
     }
@@ -77,23 +82,29 @@ class ViewController: UIViewController {
          // ACTION: Change the button’s title to “Continue”
          // ACTION: Enable the reset button
          // ACTION: Pause the timer, call the method pauseTimer
-            
+            sender.setTitle("Continue", for: .normal)
+            resetButton.isEnabled = true
+            currentMessage = messageLabel.text!
+            self.pauseTimer()
            
         } else {
          // Timer stopped or hasn't started
          // ACTION: Change the button’s title to “Pause”
          // ACTION: Disable the Reset button
-            
-           
+            sender.setTitle("Pause", for: .normal)
+            resetButton.isEnabled = false
+            messageLabel.text = currentMessage
             
             if currentInterval == 0 && timeRemaining == pomodoroDuration {
                 // We are at the start of a cycle
                 // ACTION: begin the cycle of intervals
+                self.startNextInterval()
+//                self.startTimer()
                 
             } else {
                 // We are in the middle of a cycle
                 // ACTION: Resume the timer.
-                
+                self.startTimer()
             }
         }
     }
@@ -105,17 +116,21 @@ class ViewController: UIViewController {
         }
         
         //ACTION: call the reset method
-        
+        self.resetAll()
     }
 
     //ACTION: add the method to dismiss the view controller
+    
+    @objc func closeButtonPressed(_ sender: UIButton) {
+        self.dismiss(animated: true, completion: nil)
+    }
     
     
     // MARK: Time Manipulation
     
     func startTimer() {
         //ACTION: create the timer, selector should be runTimer()
-        
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(runTimer), userInfo: nil, repeats: true)
     }
     
     @objc func runTimer() {
@@ -165,6 +180,7 @@ class ViewController: UIViewController {
             // If all intervals are complete, reset all.
             // ACTION: Post Notification
             resetAll()
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "pomodoroCompleted"), object: self)
         }
     }
     
